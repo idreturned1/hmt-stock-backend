@@ -2,6 +2,7 @@ import os
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
+
 class Controller:
     def __init__(self):
         db_url = os.environ.get('DB_URL', 'mongodb://localhost:27017')
@@ -9,12 +10,11 @@ class Controller:
         db = self.client['HMT-stock']
         self.stockDataTable = db['stock_data']
         self.userDataTable = db['user_data']
-    
 
     def get_stock_status_for_user(self, userId):
         if (userId == '-1'):
             return []
-        user = self.stockDataTable.find_one({'_id': ObjectId(userId)})
+        user = self.userDataTable.find_one({'_id': ObjectId(userId)})
         if (user != None):
             watchList = []
             for watchId in user['watchIdList']:
@@ -64,18 +64,14 @@ class Controller:
     def get_availability_count_for_user(self, userId):
         if (userId == '-1'):
             return '0'
-        
-        user = self.stockDataTable.find_one({'_id': ObjectId(userId)})
+        user = self.userDataTable.find_one({'_id': ObjectId(userId)})
         if (user != None):
             availabilityCount = 0
             for watchId in user['watchIdList']:
-                watch = self.userDataTable.find_one(
+                watch = self.stockDataTable.find_one(
                     {'_id': ObjectId(watchId)})
                 if (watch != None and watch['inStock'] == True):
                     availabilityCount += 1
             return str(availabilityCount)
         else:
             return '0'
-    
-    def endConnection(self):
-        self.client.close()
